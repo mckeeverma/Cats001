@@ -25,6 +25,21 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
             String smsMessageStr = "";
             for (int i = 0; i < sms.length; ++i) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i], format);
+                } else {
+                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
+                }
+                String smsBody = smsMessage.getMessageBody().toString();
+                String address = smsMessage.getOriginatingAddress();
+                //Long messageDate = smsMessage.getTimestampMillis();
+                //java.util.Date d = new java.util.Date(messageDate);
+                //String itemDateStr = new SimpleDateFormat("dd-MMM HH:mm:ss").format(d);
+                //smsMessageStr += "SMS From: " + address + "\n";
+                //smsMessageStr += itemDateStr + "\n";
+                //smsMessageStr += smsBody + "\n";
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(address, null, "got it: " + smsBody, null, null);
                 Intent intent2 = new Intent();
                 intent2.setAction(Intent.ACTION_MAIN);
                 intent2.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -33,6 +48,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
                         WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON +
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                intent2.putExtra("msg", "zulu");
                 intent2.setComponent(new ComponentName("com.example.marc.abc001", "com.example.marc.abc001.MainActivity"));
                 Log.d(TAG, "Calling startActivity now");
                 try {
@@ -41,23 +57,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     Log.d(TAG, "Error on startActivity: " + e.getMessage());
                     e.printStackTrace();
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i], format);
-                } else {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
-                }
-                String smsBody = smsMessage.getMessageBody().toString();
-                String address = smsMessage.getOriginatingAddress();
-                Long messageDate = smsMessage.getTimestampMillis();
-                java.util.Date d = new java.util.Date(messageDate);
-                String itemDateStr = new SimpleDateFormat("dd-MMM HH:mm:ss").format(d);
-                smsMessageStr += "SMS From: " + address + "\n";
-                smsMessageStr += itemDateStr + "\n";
-                smsMessageStr += smsBody + "\n";
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(address, null, "got it: " + smsBody, null, null);
             }
-            Toast.makeText(context, smsMessageStr, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, smsMessageStr, Toast.LENGTH_SHORT).show();
             //MainActivity inst = MainActivity.instance();
             //inst.updateList(smsMessageStr);
         }
