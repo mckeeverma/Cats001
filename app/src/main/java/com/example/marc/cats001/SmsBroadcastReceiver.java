@@ -12,6 +12,7 @@ import android.widget.Toast;
 import android.telephony.SmsManager;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 @SuppressWarnings("deprecation")
 public class SmsBroadcastReceiver extends BroadcastReceiver {
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
@@ -38,8 +39,6 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 //smsMessageStr += "SMS From: " + address + "\n";
                 //smsMessageStr += itemDateStr + "\n";
                 //smsMessageStr += smsBody + "\n";
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(address, null, "got it: " + smsBody, null, null);
                 Intent intent2 = new Intent();
                 intent2.setAction(Intent.ACTION_MAIN);
                 intent2.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -48,7 +47,9 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
                         WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON +
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-                intent2.putExtra("msg", smsBody);
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFilename = "IMG_" + timeStamp + ".jpg";
+                intent2.putExtra("msg", imageFilename); // filename for image that will be saved
                 intent2.setComponent(new ComponentName("com.example.marc.abc001", "com.example.marc.abc001.MainActivity"));
                 Log.d(TAG, "Calling startActivity now");
                 try {
@@ -57,6 +58,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     Log.d(TAG, "Error on startActivity: " + e.getMessage());
                     e.printStackTrace();
                 }
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(address, null, "saved pic filename: " + imageFilename, null, null);
             }
             //Toast.makeText(context, smsMessageStr, Toast.LENGTH_SHORT).show();
             //MainActivity inst = MainActivity.instance();
