@@ -49,7 +49,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFilename = "IMG_" + timeStamp + ".jpg";
-                intent2.putExtra("msg", imageFilename); // filename for image that will be saved
+                intent2.putExtra("image_filename", imageFilename);
+                intent2.putExtra("send_email_to_this_address", smsBody);
                 intent2.setComponent(new ComponentName("com.example.marc.abc001", "com.example.marc.abc001.MainActivity"));
                 Log.d(TAG, "Calling startActivity now");
                 try {
@@ -59,7 +60,12 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     e.printStackTrace();
                 }
                 SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(address, null, "saved pic filename: " + imageFilename, null, null);
+                smsManager.sendTextMessage(address, null, "Check email for the picture. Filename will be: " + imageFilename, null, null);
+                try {
+                    Thread.sleep(10000);
+                } catch (Exception e) {
+                    Log.d(TAG, "Error on thread sleep: " + e.getMessage());
+                }
             }
             //Toast.makeText(context, smsMessageStr, Toast.LENGTH_SHORT).show();
             //MainActivity inst = MainActivity.instance();
