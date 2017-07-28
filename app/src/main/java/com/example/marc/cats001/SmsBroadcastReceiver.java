@@ -49,11 +49,12 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFilename = "IMG_" + timeStamp + ".jpg";
+                //------------------------------------------------------------
                 //--- the following is a way to send information to an activity
                 Bundle extras = new Bundle();
                 extras.putString("image_filename", imageFilename);
                 extras.putString("send_email_to_this_address", smsBody);
-                intent.putExtras(extras);
+                intent2.putExtras(extras);
                 //------------------------------------------------------------
                 intent2.setComponent(new ComponentName("com.example.marc.abc001", "com.example.marc.abc001.MainActivity"));
                 Log.d(TAG, "Calling startActivity now");
