@@ -60,7 +60,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     e.printStackTrace();
                 }
                 SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(address, null, "Check email for the picture. Filename will be: " + imageFilename, null, null);
+                smsManager.sendTextMessage(address, null, "Check email for the picture", null, null);
                 try {
                     Thread.sleep(10000);
                 } catch (Exception e) {
