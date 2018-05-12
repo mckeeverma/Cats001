@@ -20,6 +20,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     String TAG = "marclog";
     SmsMessage smsMessage;
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "Start of onReceive");
         Bundle intentExtras = intent.getExtras();
         String format = intentExtras.getString("format");
         if (intentExtras != null) {
