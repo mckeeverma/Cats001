@@ -34,6 +34,9 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 }
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
+                if (smsBody.equals("Check email for the picture")) {
+                    continue;
+                }
                 //Long messageDate = smsMessage.getTimestampMillis();
                 //java.util.Date d = new java.util.Date(messageDate);
                 //String itemDateStr = new SimpleDateFormat("dd-MMM HH:mm:ss").format(d);
