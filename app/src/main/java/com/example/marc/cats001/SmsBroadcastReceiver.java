@@ -13,6 +13,8 @@ import android.telephony.SmsManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 @SuppressWarnings("deprecation")
 public class SmsBroadcastReceiver extends BroadcastReceiver {
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
@@ -34,14 +36,22 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 }
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
-                Log.d(TAG, "smsBody before change...: " + smsBody);
-                if (smsBody.substring(0,4).equalsIgnoreCase("cat ")) {
-                    smsBody = smsBody.substring(4);
-                    Log.d(TAG, "smsBody after change....: " + smsBody);
+                Log.d(TAG, "smsBody...: " + smsBody);
+                if (isEmailValid(smsBody)) {
+                    Log.d(TAG, "Email validated.");
+                } else if (isEmailValidWithFlash(smsBody)) {
+                    Log.d(TAG, "Email validated. Flash requested.");
                 } else {
-                    Log.d(TAG, "first 4 characters of text message not 'cat ', so ignoring the message");
+                    Log.d(TAG, "Email is not valid.  Message is ignored.");
                     continue;
                 }
+                //if (smsBody.substring(0,4).equalsIgnoreCase("cat ")) {
+                //    smsBody = smsBody.substring(4);
+                //    Log.d(TAG, "smsBody after change....: " + smsBody);
+                //} else {
+                //    Log.d(TAG, "first 4 characters of text message not 'cat ', so ignoring the message");
+                //    continue;
+                //}
                 if (smsBody.equalsIgnoreCase("Check email for the picture")) {
                     continue;
                 }
@@ -88,5 +98,17 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             //MainActivity inst = MainActivity.instance();
             //inst.updateList(smsMessageStr);
         }
+    }
+    public static boolean isEmailValid(String email) {
+        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s*$";
+        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+    public static boolean isEmailValidWithFlash(String email) {
+        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s+flash.*$";
+        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 }
