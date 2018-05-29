@@ -106,7 +106,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         return matcher.matches();
     }
     public static boolean isEmailValidWithFlash(String email) {
-        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s+flash.*$";
+        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s+flash\\s*$";
         Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
