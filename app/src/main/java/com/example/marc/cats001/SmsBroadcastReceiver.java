@@ -34,7 +34,15 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 }
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
-                if (smsBody.equals("Check email for the picture")) {
+                Log.d(TAG, "smsBody before change...: " + smsBody);
+                if (smsBody.substring(0,4).equalsIgnoreCase("cat ")) {
+                    smsBody = smsBody.substring(4);
+                    Log.d(TAG, "smsBody after change....: " + smsBody);
+                } else {
+                    Log.d(TAG, "first 4 characters of text message not 'cat ', so ignoring the message");
+                    continue;
+                }
+                if (smsBody.equalsIgnoreCase("Check email for the picture")) {
                     continue;
                 }
                 //Long messageDate = smsMessage.getTimestampMillis();
