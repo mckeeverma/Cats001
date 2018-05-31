@@ -11,6 +11,11 @@ import android.view.WindowManager;
 import android.widget.Toast;
 import android.telephony.SmsManager;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -25,6 +30,9 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         Log.d(TAG, "Start of onReceive");
         Bundle intentExtras = intent.getExtras();
         String format = intentExtras.getString("format");
+        String emailAddress;
+        String line;
+        String flashType;
         if (intentExtras != null) {
             Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
             String smsMessageStr = "";
@@ -37,30 +45,66 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
                 Log.d(TAG, "smsBody...: " + smsBody);
-                if (isEmailValid(smsBody)) {
-                    Log.d(TAG, "Email validated.");
-                } else if (isEmailValidWithFlash(smsBody)) {
-                    Log.d(TAG, "Email validated. Flash requested.");
+                if (isSaveCommandWithEmailValid(smsBody)) {
+                    Log.d(TAG, "SMS message: 'Save' command with email is in valid format.");
+                    smsBody = smsBody.replaceAll("(?i)save ", "");
+                    emailAddress = smsBody.replaceAll("\\s+", "");
+                    Log.d(TAG, "Email address from Save command: " + emailAddress);
+                    String fileName = "/storage/emulated/0/phonenumber/email.txt";
+                    String content = emailAddress;
+                    byte[] bytes = content.getBytes();
+                    try {
+                        FileOutputStream fos = new FileOutputStream(fileName);
+                        // out.write(bytes[0]);    // write a single byte
+                        // out.write(bytes,4,10);  // write sub sequence of the byte array
+                        fos.write(bytes);       // write a byte sequence
+                        fos.close();
+                        Log.d(TAG, "Email Write file content: " + emailAddress);
+                        SmsManager smsManager = SmsManager.getDefault();
+                        smsManager.sendTextMessage(address, null, emailAddress + " was saved. Text N for a picture without flash. Text F for a picture with flash.", null, null);
+                        try {
+                            Thread.sleep(10000);
+                        } catch (Exception e) {
+                            Log.d(TAG, "Error on thread sleep: " + e.getMessage());
+                        }
+                        continue;
+                    } catch (Exception e) {
+                        Log.d(TAG, "Email write file error: " + e.getMessage());
+                        continue;
+                    }
+                } else if (smsBody.equalsIgnoreCase("n") ||
+                           smsBody.equalsIgnoreCase("f")) {
+                    flashType = smsBody;
+                    Log.d(TAG, "SMS message is valid (n or f) flash or no flash requested.");
+                    try {
+                        String fileName = "/storage/emulated/0/phonenumber/email.txt";
+                        FileInputStream fis = new FileInputStream(fileName);
+                        InputStreamReader inputStreamReader = new InputStreamReader(fis);
+                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        while ( (line = bufferedReader.readLine()) != null )
+                        {
+                            stringBuilder.append(line + System.getProperty("line.separator"));
+                        }
+                        fis.close();
+                        line = stringBuilder.toString();
+                        bufferedReader.close();
+                        emailAddress = line;
+                        Log.d(TAG, "Email Read file content: " + emailAddress);
+                        if (flashType.equalsIgnoreCase("n")) {
+                            smsBody = emailAddress;
+                        } else {
+                            smsBody = emailAddress + " flash";
+                        }
+                        Log.d(TAG, "message to be sent to picture taking program: " + smsBody);
+                    } catch (Exception e) {
+                        Log.d(TAG, "Email Read file error: " + e.getMessage());
+                        continue;
+                    }
                 } else {
-                    Log.d(TAG, "Email is not valid.  Message is ignored.");
+                    Log.d(TAG, "SMS message is invalid and will be ignored.");
                     continue;
                 }
-                //if (smsBody.substring(0,4).equalsIgnoreCase("cat ")) {
-                //    smsBody = smsBody.substring(4);
-                //    Log.d(TAG, "smsBody after change....: " + smsBody);
-                //} else {
-                //    Log.d(TAG, "first 4 characters of text message not 'cat ', so ignoring the message");
-                //    continue;
-                //}
-                if (smsBody.equalsIgnoreCase("Check email for the picture")) {
-                    continue;
-                }
-                //Long messageDate = smsMessage.getTimestampMillis();
-                //java.util.Date d = new java.util.Date(messageDate);
-                //String itemDateStr = new SimpleDateFormat("dd-MMM HH:mm:ss").format(d);
-                //smsMessageStr += "SMS From: " + address + "\n";
-                //smsMessageStr += itemDateStr + "\n";
-                //smsMessageStr += smsBody + "\n";
                 Intent intent2 = new Intent();
                 intent2.setAction(Intent.ACTION_MAIN);
                 intent2.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -87,7 +131,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     e.printStackTrace();
                 }
                 SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(address, null, "Check email for the picture", null, null);
+                smsManager.sendTextMessage(address, null, "Check " + emailAddress + " email for the picture", null, null);
                 try {
                     Thread.sleep(10000);
                 } catch (Exception e) {
@@ -99,16 +143,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             //inst.updateList(smsMessageStr);
         }
     }
-    public static boolean isEmailValid(String email) {
-        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s*$";
+    public static boolean isSaveCommandWithEmailValid(String string1) {
+        String expression = "^\\s*save\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s*$";
         Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
-    }
-    public static boolean isEmailValidWithFlash(String email) {
-        String expression = "^\\s*[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}\\s+flash\\s*$";
-        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(email);
+        Matcher matcher = pattern.matcher(string1);
         return matcher.matches();
     }
 }
