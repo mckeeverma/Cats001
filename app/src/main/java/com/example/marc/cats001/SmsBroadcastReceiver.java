@@ -44,6 +44,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 }
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
+                Log.d(TAG, "sms originating adress: " + address);
                 Log.d(TAG, "smsBody...: " + smsBody);
                 if (isSaveCommandWithEmailValid(smsBody)) {
                     Log.d(TAG, "SMS message: 'Save' command with email is in valid format.");
